@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ino.web.freeBoard.mapper.FreeBoardMapper">
+
+
+	<select id="freeBoardGetList" resultType="freeBoardDto"> <!-- resultType="ino.web.board.dto.BoardDto" -->
+		SELECT *
+		FROM (SELECT ROWNUM RN, A.*
+			     FROM (SELECT DECODE(CODE_TYPE, '01', '자유', '02', '익명', '03', 'QnA') as CODETYPE, NUM, NAME, TITLE, CONTENT, TO_CHAR(REGDATE , 'YYYY/MM/DD') AS REGDATE FROM FREEBOARD
+					  <if test="searchType != null and searchType != ''">
+						  <choose>
+							  <when test="searchType == 'codeType'">
+								WHERE CODE_TYPE = #{searchDetail}		
+							  </when>
+							  <when test="searchType == 'num'">
+								  WHERE NUM = TO_NUMBER(#{searchDetail})	
+							  </when>
+							  <when test="searchType == 'title'">
+								  WHERE TITLE like '%' || #{searchDetail} || '%' 	
+							  </when>
+							  <when test="searchType == 'content'">
+								  WHERE CONTENT like '%' || #{searchDetail} || '%'	
+							  </when>
+							  <when test="searchType == 'name'">
+								  WHERE NAME like '%' || #{searchDetail} || '%'	
+							  </when>
+							  <when test="searchType == 'regdate'">
+								  WHERE to_char(REGDATE, 'YYYYMMDD') BETWEEN #{beginDate} AND #{endDate}
+							  </when>
+						  </choose>
+					  </if>
+					  ORDER BY REGDATE DESC, NUM DESC
+					  ) A
+			   ) B			
+		WHERE B.RN BETWEEN #{pagination.start} AND #{pagination.end}	
+	</select>
+
+	<insert id="freeBoardInsertPro" parameterType="freeBoardDto">
+		<selectKey keyProperty="num" resultType="int" order="BEFORE">
+			SELECT NUM_SEQ.NEXTVAL FROM DUAL 				
+		</selectKey>
+		INSERT INTO FREEBOARD(CODE_TYPE, NUM, TITLE, NAME, REGDATE, CONTENT)
+		VALUES(#{codeType}, #{num}, #{title}, #{name}, SYSDATE, #{content})
+	</insert>
+
+	<select id="freeBoardDetailByNum" resultType="freeBoardDto" parameterType="int">
+		SELECT CODE_TYPE as codeType, NUM, TITLE, NAME, TO_CHAR(REGDATE,'YYYY/MM/DD') REGDATE, CONTENT FROM FREEBOARD
+		WHERE NUM=#{num}
+	</select>
+
+	<select id="freeBoardNewNum" resultType="int">
+		SELECT MAX(NUM)
+		FROM FREEBOARD
+	</select>
+
+	<update id="freeBoardModify" parameterType="freeBoardDto">
+		UPDATE FREEBOARD
+		SET TITLE = #{title},
+		    CONTENT = #{content},
+		    CODE_TYPE = #{codeType}
+		WHERE NUM = #{num}
+
+	</update>
+
+	<update id="freeBoardDelete" parameterType="int">
+		DELETE FROM FREEBOARD
+		WHERE NUM
+		= #{num}
+
+	</update>
+	
+	<update id="freeBoardDeletes" parameterType="int[]">
+		DELETE FROM FREEBOARD
+		WHERE NUM IN
+		<foreach collection="array" item="num" open="(" close=")" separator=",">
+			#{num}
+		</foreach>
+	</update>
+	
+	<select id="freeBoardTotalCount" resultType="int">
+		SELECT COUNT(*)
+		FROM FREEBOARD
+		<if test="searchType != null and searchType != ''">
+			<choose>
+				<when test="searchType == 'codeType'">
+					WHERE CODE_TYPE = #{searchDetail}		
+				</when>
+				<when test="searchType == 'num'">
+					WHERE NUM = TO_NUMBER(#{searchDetail})	
+				</when>
+				<when test="searchType == 'title'">
+					WHERE TITLE like '%' || #{searchDetail} || '%' 	
+				</when>
+				<when test="searchType == 'content'">
+					WHERE CONTENT like '%' || #{searchDetail} || '%'	
+				</when>
+				<when test="searchType == 'name'">
+					WHERE NAME like '%' || #{searchDetail} || '%'	
+				</when>
+				<when test="searchType == 'regdate'">
+					WHERE to_char(REGDATE, 'YYYYMMDD') BETWEEN #{beginDate} AND #{endDate}
+				</when>
+			</choose>
+		 </if>
+	</select>
+
+
+</mapper>
