@@ -138,4 +138,15 @@ public class Pagination {
 	private int getBlockNext() {
 		return this.getBlockEnd() + 1;
 	}
+
+	@Override
+	public String toString() {
+		return "Pagination [page=" + page + ", endPage=" + endPage + ", pageSize=" + pageSize + ", blockSize="
+				+ blockSize + ", url=" + url + ", getPagination()=" + getPagination() + ", getPage()=" + getPage()
+				+ ", getStart()=" + getStart() + ", getEnd()=" + getEnd() + ", getBlockGroup()=" + getBlockGroup()
+				+ ", getBlockStart()=" + getBlockStart() + ", getBlockEnd()=" + getBlockEnd() + ", getBlockPrev()="
+				+ getBlockPrev() + ", getBlockNext()=" + getBlockNext() + "]";
+	}
+	
+	
 }

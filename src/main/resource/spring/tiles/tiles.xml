@@ -5,7 +5,7 @@
 
 <tiles-definitions>
     <definition name="mainTemplate" template="/WEB-INF/view/template/defaultMain.jsp"/>
-
+	
     <definition name="freeBoardMain" extends="mainTemplate">
         <put-attribute name="header" value="/WEB-INF/view/template/defaultHeader.jsp" />
         <put-attribute name="menu" value="/WEB-INF/view/template/defaultMenu.jsp" />
