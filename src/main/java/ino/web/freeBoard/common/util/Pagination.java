@@ -141,11 +141,8 @@ public class Pagination {
 
 	@Override
 	public String toString() {
-		return "Pagination [page=" + page + ", endPage=" + endPage + ", pageSize=" + pageSize + ", blockSize="
-				+ blockSize + ", url=" + url + ", getPagination()=" + getPagination() + ", getPage()=" + getPage()
-				+ ", getStart()=" + getStart() + ", getEnd()=" + getEnd() + ", getBlockGroup()=" + getBlockGroup()
-				+ ", getBlockStart()=" + getBlockStart() + ", getBlockEnd()=" + getBlockEnd() + ", getBlockPrev()="
-				+ getBlockPrev() + ", getBlockNext()=" + getBlockNext() + "]";
+		return "Pagination [page=" + page + ", endPage=" + endPage + ", url=" + url + ", blockStart="
+				+ getBlockStart() + ", blockEnd=" + getBlockEnd() + "]";
 	}
 	
 	

@@ -52,7 +52,7 @@ public class NexaController {
 		VariableList out_varList = out_pData.getVariableList();
 		out_varList.add("ErrorCode", 0);
 		out_varList.add("ErrorMsg", "성공");
-		out_varList.add("pagination", pagination.toString());
+		out_varList.add("pagination", pagination);
 		out_varList.add("data", freeBoardService.freeBoardList(selectInfo));
 
 		HttpPlatformResponse pRes = new HttpPlatformResponse(response, PlatformType.CONTENT_TYPE_XML, "UTF-8");
