@@ -26,23 +26,43 @@ public class NexaController {
 	@Autowired
 	private FreeBoardService freeBoardService;
 	
-	private static String searchUrl = "/search.ino";
+	private static String searchUrl = "/nexa.ino";
 	
 	@RequestMapping(value="/nexa.ino", produces="application/xml; charset=UTF8", method = {RequestMethod.POST, RequestMethod.GET})
 	@ResponseBody
 	public void getServerInfo(HttpServletResponse response,
 							  HttpServletRequest request,
+							  String searchType,
+							  String searchNum,
+							  String searchTitle,
+							  String searchContent,
+							  String searchName,
+							  String beginDate,
+							  String endDate,
 							  Pagination pagination) throws Exception {
+		System.out.println(beginDate);
+		System.out.println(endDate);
 		// 검색값 세팅
 		Map<String, Object> selectInfo = new HashMap<>();
+		selectInfo.put("searchType", searchType);
+		selectInfo.put("searchNum", searchNum);
+		selectInfo.put("searchTitle", searchTitle);
+		selectInfo.put("searchContent", searchContent);
+		selectInfo.put("searchName", searchName);
+		selectInfo.put("beginDate", beginDate);
+		selectInfo.put("endDate", endDate);
+		selectInfo.put("pagination", pagination);
 		// 페이지네이션 세팅
 		int totalCount = freeBoardService.freeBoardTotalCount(selectInfo);
 		pagination.setEndPage(totalCount);
 		pagination.setUrl(request.getContextPath() + searchUrl + 
-				"?searchType=" + "searchType" + 
-				"&searchDetail=" + "searchDetail" +
-				"&beginDate=" + "beginDate" +
-				"&endDate=" + "endDate");
+						"?searchType=" + searchType + 
+						"&searchNum=" + searchNum +
+						"&searchTitle=" + searchTitle +
+						"&searchContent=" + searchContent +
+						"&searchName=" + searchName +
+						"&beginDate=" + beginDate +
+						"&endDate=" + endDate);
 		selectInfo.put("pagination", pagination);
 		selectInfo.put("list", freeBoardService.freeBoardList(selectInfo));
 

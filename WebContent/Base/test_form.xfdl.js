@@ -20,7 +20,7 @@
             
             // Object(Dataset, ExcelExportObject) Initialize
             obj = new Dataset("Dataset00", this);
-            obj._setContents("<ColumnInfo><Column id=\"codeType\" type=\"STRING\" size=\"10\"/><Column id=\"num\" type=\"INT\" size=\"10\"/><Column id=\"name\" type=\"STRING\" size=\"100\"/><Column id=\"title\" type=\"STRING\" size=\"100\"/><Column id=\"content\" type=\"STRING\" size=\"100\"/><Column id=\"regdate\" type=\"STRING\" size=\"8\"/></ColumnInfo>");
+            obj._setContents("<ColumnInfo><Column id=\"codeType\" type=\"STRING\" size=\"10\"/><Column id=\"num\" type=\"STRING\" size=\"10\"/><Column id=\"name\" type=\"STRING\" size=\"100\"/><Column id=\"title\" type=\"STRING\" size=\"100\"/><Column id=\"content\" type=\"STRING\" size=\"100\"/><Column id=\"regdate\" type=\"STRING\" size=\"8\"/></ColumnInfo>");
             this.addChild(obj.name, obj);
 
 
@@ -292,20 +292,130 @@
 
         	this.searchBtn_onclick = function(obj,e)
         	{
-        		let searchType = this.Combo00.value;
-        		let searchNum = this.searchNum.value;
-        		let searchTitle = this.searchTitle.value;
-        		let searchContent = this.searchContent.value;
-        		let searchName = this.searchWriter.value;
-        		let beginDate = this.searchDate_begin.value;
-        		let endDate = this.searchDate_end.value;
-        		console.log(searchType);
-        		console.log(searchNum);
-        		console.log(searchTitle);
-        		console.log(searchContent);
-        		console.log(searchName);
-        		console.log(beginDate);
-        		console.log(endDate);
+        		let searchType = this.Combo00.value == undefined ? '' : this.Combo00.value;
+        		let searchNum = this.searchNum.value == undefined ? '' : this.searchNum.value;
+        		let searchTitle = this.searchTitle.value == undefined ? '' : this.searchTitle.value;
+        		let searchContent = this.searchContent.value == undefined ? '' : this.searchContent.value;
+        		let searchName = this.searchWriter.value == undefined ? '' : this.searchWriter.value;
+        		let beginDate = this.searchDate_begin.value == undefined ? '' : this.searchDate_begin.value;
+        		let endDate = this.searchDate_end.value == undefined ? '' : this.searchDate_end.value;
+
+        		let id = "";
+        		let url = "/nexa.ino";
+        		let reqDs = "";
+        		let respDs = "";
+        		let args = ""; // args, callback 파라미터는 생략 가능
+        		let callback = "received";
+
+        		// url 생성
+        		url += "?searchType=" + searchType;
+        		url += "&searchNum=" + searchNum;
+        		url += "&searchTitle=" + searchTitle;
+        		url += "&searchContent=" + searchContent;
+        		url += "&searchName=" + searchName;
+        		url += "&beginDate=" + beginDate;
+        		url += "&endDate=" + endDate;
+
+        		// 서버에서 전송하는 키값
+        		this.data = "";
+        		this.pagination = "";
+
+        		this.transaction(id, url, reqDs, respDs, args, callback);
+
+        		this.received = function(id, code, message)
+        		{
+        			if (code == 0) {
+
+        				// console.log("code: "+ code + " message: " + message);
+        				const responseString = this.data;
+        				// console.log("원본 문자열: "+responseString);
+
+        				// FreeBoardDto 객체 배열 생성
+        				const dtoRegex = /FreeBoardDto \[(.*?)\]/g;
+        				const dtoMatches = responseString.match(dtoRegex);
+
+        				if(dtoMatches == null){
+        					alert("조건에 맞는 게시글이 없습니다");
+        					return;
+        				}
+        				const dtoArray = dtoMatches.map(dtoMatch => {
+        					  const propsRegex = /(\w+)=([^,\]]+)/g;
+        					  const propsMatches = Array.from(dtoMatch.matchAll(propsRegex));
+
+        					  const dtoObj = {};
+        					  propsMatches.forEach(match => {
+        						const propKey = match[1].trim();
+        						const propValue = match[2].trim();
+        						dtoObj[propKey] = propValue;
+        					  });
+
+        					  return dtoObj;
+        				});
+        				//console.log("파싱 후: "+dtoArray);
+
+        				var dataset = this.Dataset00;
+        				// 기존 행 삭제
+        				dataset.clear();
+
+        				// Dataset의 컬럼 구조 설정
+        				dataset.addColumn("codeType", "string");
+        				dataset.addColumn("num", "string");
+        				dataset.addColumn("title", "string");
+        				dataset.addColumn("name", "string");
+        				dataset.addColumn("regdate", "string");
+        				dataset.addColumn("content", "string");
+
+        				// 배열의 각 객체를 순회하며 Dataset에 데이터 추가
+        				dtoArray.forEach(dto => {
+        				console.log(dto.num);
+        					  var row = dataset.addRow();
+        					  dataset.setColumn(row, "codeType", dto.codeType);
+        					  dataset.setColumn(row, "num", dto.num);
+        					  dataset.setColumn(row, "title", dto.title);
+        					  dataset.setColumn(row, "name", dto.name);
+        					  dataset.setColumn(row, "regdate", dto.regdate);
+        					  dataset.setColumn(row, "content", dto.content);
+        				});
+
+        				// 페이지 버튼 세팅
+        				// console.log(this.pagination);
+        				// 파싱
+        				const res_btn_String = this.pagination;
+        				let temp = {};
+
+        				const regex = /(\w+)\s*\[([^]+?)\]/;
+        				const match = res_btn_String.match(regex);
+
+        				if (match) {
+        				  const key = match[1];
+        				  const valuesStr = match[2];
+        				  const valuesRegex = /(\w+)\s*=\s*([^,]+)/g;
+        				  let valuesMatch;
+        				  temp = { [key]: {} };
+
+        				  while ((valuesMatch = valuesRegex.exec(valuesStr))) {
+        					const name = valuesMatch[1];
+        					const value = valuesMatch[2].trim();
+        					temp[key][name] = value;
+        				  }
+
+        				  // console.log(page_btn);
+        				}
+        				const pagination = temp.Pagination;
+
+        				// 페이지 버튼 가져오기
+        				const pageBtnArr = [this.pageBtn01, this.pageBtn02, this.pageBtn03, this.pageBtn04, this.pageBtn05];
+        				let btnNum = pagination.blockStart;
+
+        				pageBtnArr.forEach((btn) => {
+        					btn.set_text(btnNum++);
+        				});
+
+        			} else {
+        				this.alert("Error["+code+"]:"+message);
+        			}
+        		}
+
         	};
 
         });

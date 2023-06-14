@@ -5,15 +5,15 @@
 
 <mapper namespace="ino.web.freeBoard.mapper.FreeBoardMapper">
 
-
-	<select id="freeBoardGetList" resultType="freeBoardDto"> <!-- resultType="ino.web.board.dto.BoardDto" -->
+	<!-- JSP용 쿼리 -->
+	<!-- <select id="freeBoardGetList" resultType="freeBoardDto">>
 		SELECT *
 		FROM (SELECT ROWNUM RN, A.*
 			     FROM (SELECT DECODE(CODE_TYPE, '01', '자유', '02', '익명', '03', 'QnA') as CODETYPE, NUM, NAME, TITLE, CONTENT, TO_CHAR(REGDATE , 'YYYY/MM/DD') AS REGDATE FROM FREEBOARD
 					  <if test="searchType != null and searchType != ''">
 						  <choose>
 							  <when test="searchType == 'codeType'">
-								WHERE CODE_TYPE = #{searchDetail}		
+								  WHERE CODE_TYPE = #{searchDetail}		
 							  </when>
 							  <when test="searchType == 'num'">
 								  WHERE NUM = TO_NUMBER(#{searchDetail})	
@@ -34,6 +34,36 @@
 					  </if>
 					  ORDER BY REGDATE DESC, NUM DESC
 					  ) A
+			   ) B			
+		WHERE B.RN BETWEEN #{pagination.start} AND #{pagination.end}	
+	</select> -->
+	
+	<!-- 넥사크로용 쿼리 -->
+	<select id="freeBoardGetList" resultType="freeBoardDto">
+		SELECT *
+		FROM (SELECT ROWNUM RN, A.*
+			     FROM (SELECT DECODE(CODE_TYPE, '01', '자유', '02', '익명', '03', 'QnA') as CODETYPE, NUM, NAME, TITLE, CONTENT, TO_CHAR(REGDATE , 'YYYY/MM/DD') AS REGDATE FROM FREEBOARD
+			     	   WHERE 1=1
+					   <if test="searchType != null and searchType != ''">
+					   		AND CODE_TYPE = #{searchType}
+					   </if>
+					   <if test="searchNum != null and searchNum != ''">
+					   		AND NUM = TO_NUMBER(#{searchNum})
+					   </if>			
+					   <if test="searchTitle != null and searchTitle != ''">
+					   		AND TITLE like '%' || #{searchTitle} || '%'
+					   </if>
+					   <if test="searchContent != null and searchContent != ''">
+					   		AND CONTENT like '%' || #{searchContent} || '%'	
+					   </if>
+					   <if test="searchName != null and searchName != ''">
+					   		AND NAME like '%' || #{searchName} || '%'	
+					   </if>
+					   <if test="beginDate != null and beginDate != '' and endDate != null and endDate != ''">
+					   		AND to_char(REGDATE, 'YYYYMMDD') BETWEEN #{beginDate} AND #{endDate}	
+					   </if>
+					   ORDER BY REGDATE DESC, NUM DESC
+					   ) A
 			   ) B			
 		WHERE B.RN BETWEEN #{pagination.start} AND #{pagination.end}	
 	</select>
